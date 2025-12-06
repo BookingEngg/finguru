@@ -1,0 +1,6 @@
+# Root Ignore
+node_modules/
+dist
+
+# Config 
+src/config/config.*
