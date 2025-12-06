@@ -32,3 +32,7 @@ export interface IDataBase {
   password: string;
   port: number;
 }
+
+export interface IServices {
+  backend: string;
+}

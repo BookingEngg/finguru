@@ -8,11 +8,10 @@ import {
   uiConfigs,
 } from "@config";
 
-export const fetch = (
-  url: RequestInfo,
-  init?: RequestInit
-): Promise<Response> =>
-  import("node-fetch").then(({ default: fetch }) => fetch(url, init));
+export async function fetch(url: RequestInfo, init?: RequestInit) {
+  const { default: fetch } = await import("node-fetch");
+  return fetch(url, init).then((res) => res.json());
+}
 
 export const getRedisUrl = () => {
   const { username, password, host, port } = redisConfig;

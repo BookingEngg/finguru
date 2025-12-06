@@ -1,5 +1,11 @@
 import nconf from "nconf";
-import { IDataBaseConfig, IRedisConfig, IServer, IUiConfig } from "@/typings/config";
+import {
+  IDataBaseConfig,
+  IRedisConfig,
+  IServer,
+  IServices,
+  IUiConfig,
+} from "@/typings/config";
 
 export const env = process.env.NODE_ENV || "development";
 let configFile = `src/config/config.${env}.json`;
@@ -17,3 +23,5 @@ export const uiConfigs = nconf.get("ui") as IUiConfig;
 export const MONGO_DB_NAMES: readonly string[] = ["praman"];
 export const mongoDbConfig = nconf.get("databases").mongodb as IDataBaseConfig;
 export const redisConfig = nconf.get("redis") as IRedisConfig;
+
+export const services = nconf.get("services") as IServices;
