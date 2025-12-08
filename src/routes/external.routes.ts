@@ -25,7 +25,7 @@ class ExternalRoutes implements Routes {
   private initializeReportPostRoutes = (path: string) => {
     this.router.post(
       `${path}/`,
-      // this.authMiddleware.authorizedUser,
+      this.authMiddleware.authorizedUser,
       multer({ dest: "temp/" }).single("file"),
       asyncWrapper(this.financeReportController.postBankStatementReport)
     );

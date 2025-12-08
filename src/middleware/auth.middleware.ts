@@ -20,8 +20,8 @@ class AuthMiddleware {
         cookie: req.headers.cookie,
       },
     })
-      .then((data: IUser) => {
-        req.user = data;
+      .then((data: { user: IUser }) => {
+        req.user = data.user;
         next();
       })
       .catch((_error) => {

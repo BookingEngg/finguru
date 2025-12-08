@@ -1,7 +1,10 @@
+import PaymentDao from "@/dao/payment.dao";
 import { IUser } from "@/interfaces/user.interface";
 import * as R from "ramda";
 
 class BankStatementService {
+  private paymentDao = new PaymentDao();
+
   /**
    * Check if the current row is the header row in the bank statement
    */
@@ -42,10 +45,67 @@ class BankStatementService {
   };
 
   /**
+   * This will give the formatted payment for sbi bank statement
+   * @param transactionStatementRow : Transaction statement row
+   */
+  private getFormattedPmtForSbiStatement = (
+    transactionStatementRow: Record<string, string>,
+    userId: string
+  ) => {
+    const debitAmount = R.pathOr("", ["field5"], transactionStatementRow);
+    const creditAmount = R.pathOr("", ["field6"], transactionStatementRow);
+    return {
+      bank_name: "SBI",
+      user_id: userId,
+      flags: [],
+
+      transaction_id: R.pathOr("", ["field4"], transactionStatementRow),
+      description: R.pathOr("", ["field3"], transactionStatementRow),
+      transaction_type: debitAmount ? "debit" : "credit",
+      amount: debitAmount
+        ? Number(debitAmount.replace(/,/g, ""))
+        : Number(creditAmount.replace(/,/g, "")),
+      transaction_created_at: R.pathOr(
+        "",
+        ["Account Name       :"],
+        transactionStatementRow
+      ),
+    };
+  };
+
+  /**
+   * This will give the formatted payment for hdfc bank statement
+   * @param transactionStatementRow : Transaction statement row
+   */
+  private getFormattedPmtForHdfcStatement = (
+    transactionStatementRow: Record<string, string>,
+    userId: string
+  ) => {
+    const debitAmount = R.pathOr("", ["field5"], transactionStatementRow);
+    const creditAmount = R.pathOr("", ["field6"], transactionStatementRow);
+    return {
+      bank_name: "HDFC",
+      user_id: userId,
+      flags: [],
+
+      transaction_id: R.pathOr("", ["field3"], transactionStatementRow),
+      description: R.pathOr("", ["field2"], transactionStatementRow),
+      transaction_type: debitAmount ? "debit" : "credit",
+      amount: debitAmount
+        ? Number(debitAmount.replace(/,/g, ""))
+        : Number(creditAmount.replace(/,/g, "")),
+      transaction_created_at: R.pathOr("", ["field4"], transactionStatementRow),
+    };
+  };
+
+  /**
    * This will ge the parsed filtered transactions of hdfc bank statement
    * @param reportData : HDFC Bank Statement Data
    */
-  private getHdfcBankStatement = (reportData: Record<string, string>[]) => {
+  private getHdfcBankStatement = (
+    reportData: Record<string, string>[],
+    userId: string
+  ) => {
     const parsedFilteredStatements = [];
     const { header_fields, fields_args } = this.BANK_STATEMENT_MAPPER.HDFC;
 
@@ -75,7 +135,10 @@ class BankStatementService {
         }
 
         // Push the valid transaction row
-        parsedFilteredStatements.push(transactionRow);
+        // console.log(transactionRow);
+        parsedFilteredStatements.push(
+          this.getFormattedPmtForHdfcStatement(transactionRow, userId)
+        );
       }
 
       const isHeader = this.isHeaderStatementRow(
@@ -98,7 +161,10 @@ class BankStatementService {
    * This will ge the parsed filtered transactions of sbi bank statement
    * @param reportData : SBI Bank Statement Data
    */
-  private getSbiBankStatement = (reportData: Record<string, string>[]) => {
+  private getSbiBankStatement = (
+    reportData: Record<string, string>[],
+    userId: string
+  ) => {
     const parsedFilteredStatements = [];
     const { header_fields, fields_args } = this.BANK_STATEMENT_MAPPER.SBI;
 
@@ -128,7 +194,9 @@ class BankStatementService {
         }
 
         // Push the valid transaction row
-        parsedFilteredStatements.push(transactionRow);
+        parsedFilteredStatements.push(
+          this.getFormattedPmtForSbiStatement(transactionRow, userId)
+        );
       }
 
       const isHeader = this.isHeaderStatementRow(
@@ -167,8 +235,16 @@ class BankStatementService {
       getStatement: this.getHdfcBankStatement,
     },
     SBI: {
-      header_fields: ["field3", "field4", "field5", "field6", "field7"],
+      header_fields: [
+        "Account Name       :",
+        "field3",
+        "field4",
+        "field5",
+        "field6",
+        "field7",
+      ],
       fields_args: [
+        "Txn Date",
         "Description",
         "Ref No./Cheque No.",
         "Debit",
@@ -184,16 +260,34 @@ class BankStatementService {
     bankName: string;
     user: IUser;
   }) => {
-    const { reportData, bankName } = payload;
+    const { reportData, bankName, user } = payload;
 
     const bankStatementDetails = this.BANK_STATEMENT_MAPPER[bankName];
 
     if (!bankStatementDetails) {
-      throw new Error("Bank statement details not found");
+      throw new Error("Bank not found");
     }
 
-    const bankStatement = bankStatementDetails.getStatement(reportData);
-    console.dir(bankStatement, { depth: null });
+    const bankStatement = bankStatementDetails.getStatement(
+      reportData,
+      user._id
+    );
+
+    const existingPayments = await this.paymentDao.getPaymentsByTransactionIds(
+      bankStatement.map((pmt) => pmt.transaction_id),
+      ["transaction_id", "_id"]
+    );
+    const exisitingPaymentMapper = R.indexBy(
+      R.prop("transaction_id"),
+      existingPayments
+    );
+
+    const newStatements = bankStatement.filter((statement) => {
+      return !exisitingPaymentMapper[statement.transaction_id];
+    });
+
+    newStatements.length &&
+      (await this.paymentDao.createBulkPayments(newStatements));
   };
 }
 
