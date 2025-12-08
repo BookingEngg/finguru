@@ -20,6 +20,7 @@
     "cookie-session": "^2.1.0",
     "cors": "^2.8.5",
     "cross-env": "^7.0.3",
+    "crypto": "^1.0.1",
     "csvtojson": "^2.0.14",
     "express": "^4.21.0",
     "moment": "^2.30.1",

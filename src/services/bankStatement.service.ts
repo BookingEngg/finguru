@@ -1,5 +1,7 @@
+import { TRANSACTION_IDENTIFIER_SIZE } from "@/constants/payment.constants";
 import PaymentDao from "@/dao/payment.dao";
 import { IUser } from "@/interfaces/user.interface";
+import { getUniqueIdentifierFromParameters } from "@/util/utils.util";
 import * as R from "ramda";
 
 class BankStatementService {
@@ -54,22 +56,27 @@ class BankStatementService {
   ) => {
     const debitAmount = R.pathOr("", ["field5"], transactionStatementRow);
     const creditAmount = R.pathOr("", ["field6"], transactionStatementRow);
+    const transactionDescription =
+      R.path(["field3"], transactionStatementRow) || "";
+    const transactionCreatedAt =
+      R.path(["Account Name       :"], transactionStatementRow) || "";
+
+    const transactionId = getUniqueIdentifierFromParameters(
+      [transactionCreatedAt, transactionDescription],
+      TRANSACTION_IDENTIFIER_SIZE
+    );
     return {
       bank_name: "SBI",
       user_id: userId,
       flags: [],
 
-      transaction_id: R.pathOr("", ["field4"], transactionStatementRow),
-      description: R.pathOr("", ["field3"], transactionStatementRow),
+      transaction_id: transactionId,
+      description: transactionDescription,
       transaction_type: debitAmount ? "debit" : "credit",
       amount: debitAmount
         ? Number(debitAmount.replace(/,/g, ""))
         : Number(creditAmount.replace(/,/g, "")),
-      transaction_created_at: R.pathOr(
-        "",
-        ["Account Name       :"],
-        transactionStatementRow
-      ),
+      transaction_created_at: transactionCreatedAt,
     };
   };
 
@@ -81,20 +88,30 @@ class BankStatementService {
     transactionStatementRow: Record<string, string>,
     userId: string
   ) => {
-    const debitAmount = R.pathOr("", ["field5"], transactionStatementRow);
-    const creditAmount = R.pathOr("", ["field6"], transactionStatementRow);
+    const debitAmount = R.path(["field5"], transactionStatementRow) || "";
+    const creditAmount = R.path(["field6"], transactionStatementRow) || "";
+    const transactionDescription =
+      R.path(["field2"], transactionStatementRow) || "";
+    const transactionCreatedAt =
+      R.path(["field4"], transactionStatementRow) || "";
+
+    const transactionId = getUniqueIdentifierFromParameters(
+      [transactionCreatedAt, transactionDescription],
+      TRANSACTION_IDENTIFIER_SIZE
+    );
+
     return {
       bank_name: "HDFC",
       user_id: userId,
       flags: [],
 
-      transaction_id: R.pathOr("", ["field3"], transactionStatementRow),
-      description: R.pathOr("", ["field2"], transactionStatementRow),
+      transaction_id: transactionId,
+      description: transactionDescription,
       transaction_type: debitAmount ? "debit" : "credit",
       amount: debitAmount
         ? Number(debitAmount.replace(/,/g, ""))
         : Number(creditAmount.replace(/,/g, "")),
-      transaction_created_at: R.pathOr("", ["field4"], transactionStatementRow),
+      transaction_created_at: transactionCreatedAt,
     };
   };
 

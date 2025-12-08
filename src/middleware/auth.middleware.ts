@@ -14,7 +14,7 @@ class AuthMiddleware {
     res: Response,
     next: NextFunction
   ) => {
-    return await fetch(`${this.backendHttp}/user`, {
+    return fetch(`${this.backendHttp}/user`, {
       method: "GET",
       headers: {
         cookie: req.headers.cookie,
@@ -25,7 +25,7 @@ class AuthMiddleware {
         next();
       })
       .catch((_error) => {
-        return res.status(401);
+        next(new Error(`Unauthorized 401`));
       });
   };
 }

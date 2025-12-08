@@ -1,0 +1,3 @@
+
+
+export const TRANSACTION_IDENTIFIER_SIZE = 24;

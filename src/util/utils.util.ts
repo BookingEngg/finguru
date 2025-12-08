@@ -1,4 +1,5 @@
-import type { RequestInfo, RequestInit, Response } from "node-fetch";
+import crypto from "crypto";
+import type { RequestInfo, RequestInit } from "node-fetch";
 import {
   redisConfig,
   isProduction,
@@ -32,3 +33,16 @@ export const getRedirectionUrlToUi = () => {
 
 export const sleep = (ms: number) =>
   new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * Get the unique identifier from the input parameters
+ * @param inputParaameters {string[]} Input parameters
+ * @param size {number} Size of the identifier
+ */
+export const getUniqueIdentifierFromParameters = (
+  inputParaameters: string[],
+  size: number
+) => {
+  const input = inputParaameters.join("|");
+  return crypto.createHash("md5").update(input).digest("hex").slice(0, size);
+};
