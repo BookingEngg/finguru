@@ -3,9 +3,9 @@ import * as R from "ramda";
 
 class BankStatementService {
   /**
-   * Check if the current row is the header row in the hdfc bank statement
+   * Check if the current row is the header row in the bank statement
    */
-  private isHdfcBankHeader = (
+  private isHeaderStatementRow = (
     currentRow: Record<string, string>,
     rowKey: string[],
     headerFields: string[]
@@ -78,7 +78,7 @@ class BankStatementService {
         parsedFilteredStatements.push(transactionRow);
       }
 
-      const isHeader = this.isHdfcBankHeader(
+      const isHeader = this.isHeaderStatementRow(
         currentUnformattedStatementRow,
         header_fields,
         fields_args
@@ -88,6 +88,58 @@ class BankStatementService {
       if (isHeader) {
         isTransactionRow = true;
         i += 1; // Skip the next star row
+      }
+    }
+
+    return parsedFilteredStatements;
+  };
+
+  /**
+   * This will ge the parsed filtered transactions of sbi bank statement
+   * @param reportData : SBI Bank Statement Data
+   */
+  private getSbiBankStatement = (reportData: Record<string, string>[]) => {
+    const parsedFilteredStatements = [];
+    const { header_fields, fields_args } = this.BANK_STATEMENT_MAPPER.SBI;
+
+    let isTransactionRow = false;
+
+    for (let i = 0; i < reportData.length; i++) {
+      const currentUnformattedStatementRow = reportData[i];
+
+      // Current row is transaction row
+      if (isTransactionRow) {
+        // Pick only the header fields value (valid_values)
+        const transactionRow = R.pick(
+          header_fields,
+          currentUnformattedStatementRow
+        );
+
+        // Check if the transaction row is start row or empty row
+        const isInvalidRow = this.isInvalidStatementRow(
+          currentUnformattedStatementRow,
+          header_fields
+        );
+
+        // Invalid transaction row means => all transaction completed need to stop the transaction filtering
+        if (isInvalidRow.isStarRow || isInvalidRow.isAllEmptyRow) {
+          isTransactionRow = false;
+          continue;
+        }
+
+        // Push the valid transaction row
+        parsedFilteredStatements.push(transactionRow);
+      }
+
+      const isHeader = this.isHeaderStatementRow(
+        currentUnformattedStatementRow,
+        header_fields,
+        fields_args
+      );
+
+      // Check if the current row is header row => start the transaction filtering
+      if (isHeader) {
+        isTransactionRow = true;
       }
     }
 
@@ -114,6 +166,17 @@ class BankStatementService {
       ],
       getStatement: this.getHdfcBankStatement,
     },
+    SBI: {
+      header_fields: ["field3", "field4", "field5", "field6", "field7"],
+      fields_args: [
+        "Description",
+        "Ref No./Cheque No.",
+        "Debit",
+        "Credit",
+        "Balance",
+      ],
+      getStatement: this.getSbiBankStatement,
+    },
   };
 
   public getBankStatements = async (payload: {
@@ -131,8 +194,6 @@ class BankStatementService {
 
     const bankStatement = bankStatementDetails.getStatement(reportData);
     console.dir(bankStatement, { depth: null });
-
-    console.dir(reportData, { depth: null });
   };
 }
 
