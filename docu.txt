@@ -1,0 +1,38 @@
+FinGuru Work Flow
+====================
+
+Step 1. Get all the transaction from the bank statment via (CSV or XLS)
+====================
+Step 2. Add the flag / tag for the each transaction
+Description: Need to add the flag that each transaction have lie in which all bucket
+Ex: A transaction can be lie in multiple bucket (investment, upi payment, salery, etc...)
+
+Problem Statement: 
+1. We don't know how many buckets can be possible
+2. How can we assign the buckets to each payment
+
+Two ways to add the bucket 
+1. Static Buckets (Fixed number of buckets) :: Not can be used by anyone else
+2. Dynamic Buckets User create their own buckets
+
+Problem with dynamic buckets is how can we define that what all kind of payment is belong to that bucket
+
+
+Solution for assign the dynamic bucket to the payments
+1. Only admin can create the bucket/rules (Admin, Super Admin)
+2. Structure of bucket/rules
+    - Tag Name
+    - Description
+    - Bucket Type (Default / Custom)
+    - UserId (Created for user Id in case of custom)
+    - Priority (1 to 10) (Higher the number, higher the priority)
+    - Conditions (Array of conditions)
+      - Field (field to compare in payment)
+      - Operator (in, equals, grater, lower, etc...)
+      - Value (value to compare)
+
+1. User upload the transaction file (CSV or XLS) (Done)
+2. Process each transaction and create the payment (Done)
+3. Raise the event to each payment
+4. Process each payment and try to assign the bucket
+   4.1 Try to assign the default and user assignt to bucket to that user payment

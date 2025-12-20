@@ -2,7 +2,7 @@ import { Schema } from "mongoose";
 import { MONGO_INSTANCES } from "@/database";
 import { IPayments } from "@/interfaces/payment.interface";
 
-const dbConnection = MONGO_INSTANCES.praman;
+const dbConnection = MONGO_INSTANCES.finance;
 
 const PaymentsSchema: Schema<IPayments> = new Schema(
   {

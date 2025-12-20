@@ -20,7 +20,7 @@ export const isProduction = env === "prod";
 
 export const uiConfigs = nconf.get("ui") as IUiConfig;
 
-export const MONGO_DB_NAMES: readonly string[] = ["praman"];
+export const MONGO_DB_NAMES: readonly string[] = ["finance"];
 export const mongoDbConfig = nconf.get("databases").mongodb as IDataBaseConfig;
 export const redisConfig = nconf.get("redis") as IRedisConfig;
 

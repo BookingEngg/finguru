@@ -11,7 +11,7 @@ class AuthMiddleware {
 
   public authorizedUser = async (
     req: Request,
-    res: Response,
+    _res: Response,
     next: NextFunction
   ) => {
     return fetch(`${this.backendHttp}/user`, {

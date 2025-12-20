@@ -5,9 +5,10 @@ import multer from "multer";
 import { Routes } from "@interfaces/common.interface";
 // Middleware
 import AuthMiddleware from "@/middleware/auth.middleware";
+import { asyncWrapper } from "@/middleware/common.middleware";
 // Controllers
 import FinanceReportController from "@/controllers/financeReport.controller";
-import { asyncWrapper } from "@/middleware/common.middleware";
+import RulesController from "@/controllers/rules.controller";
 
 class ExternalRoutes implements Routes {
   public path = "/api/v1/platform";
@@ -17,18 +18,34 @@ class ExternalRoutes implements Routes {
   private authMiddleware = new AuthMiddleware();
   // Controllers
   private financeReportController = new FinanceReportController();
+  private rulesController = new RulesController();
 
   constructor() {
-    this.initializeReportPostRoutes(`${this.path}/report`);
+    this.initializeStatementsRoutes(`${this.path}/statement`);
+    this.initializeRulesRoutes(`${this.path}/rule`);
   }
 
-  private initializeReportPostRoutes = (path: string) => {
+  private initializeStatementsRoutes = (path: string) => {
     this.router.post(
       `${path}/`,
       this.authMiddleware.authorizedUser,
       multer({ dest: "temp/" }).single("file"),
       asyncWrapper(this.financeReportController.postBankStatementReport)
     );
+  };
+
+  private initializeRulesRoutes = (path: string) => {
+    this.router.post(
+      `${path}/`,
+      this.authMiddleware.authorizedUser,
+      asyncWrapper(this.rulesController.addNewRule)
+    );
+
+    this.router.put(
+      `${path}/:ruleId`,
+      this.authMiddleware.authorizedUser,
+      asyncWrapper(this.rulesController.updateRule)
+    )
   };
 }
 
