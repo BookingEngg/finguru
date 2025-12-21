@@ -20,6 +20,7 @@ const RulesSchema: Schema<IRules> = new Schema(
     priority: { type: Number, required: true },
 
     bucket_type: { type: String, required: true },
+    logic: { type: String, required: true },
     conditions: { type: [RulesConditionsSchema], required: true },
 
     is_active: { type: Boolean, default: true },

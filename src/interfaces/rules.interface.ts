@@ -5,7 +5,8 @@ export interface IRules extends Document {
   description: string;
   priority: number;
   bucket_type: "default" | "custom";
-
+  
+  logic: "and" | "or";
   conditions: IRulesConditions[];
   is_active: boolean;
 
@@ -24,5 +25,7 @@ export interface ICreateRulesPayload {
   description: string;
   priority: number;
   bucket_type: "default" | "custom";
+  logic: "and" | "or";
+  user_id: string;
   conditions: IRulesConditions[];
 }

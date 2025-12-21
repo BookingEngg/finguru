@@ -18,7 +18,7 @@ class RulesService {
    * This will add the new rule with given conditions
    */
   public addNewRule = async (user: IUser, rulePaylaod: ICreateRulesPayload) => {
-    const { tag_name: tagName } = rulePaylaod;
+    const { tag_name: tagName, bucket_type: bucketType } = rulePaylaod;
 
     const existingRule = await this.rulesDao.getRuleByTagName(tagName);
     if (existingRule) {
@@ -29,10 +29,12 @@ class RulesService {
       tag_name: rulePaylaod.tag_name,
       description: rulePaylaod.description,
       priority: rulePaylaod.priority,
-      bucket_type: rulePaylaod.bucket_type,
+      bucket_type: bucketType,
+      logic: rulePaylaod.logic,
       conditions: rulePaylaod.conditions,
       is_active: true,
       created_by: user._id,
+      ...(bucketType === "custom" ? { user_id: user._id } : {}),
     };
 
     return await this.rulesDao.createRule(rulePayload);
@@ -47,6 +49,9 @@ class RulesService {
   ) => {
     const {
       tag_name: tagName,
+      logic,
+      bucket_type: bucketType,
+      user_id: userId,
       description,
       priority,
       conditions,
@@ -78,6 +83,9 @@ class RulesService {
         ...(tagName ? { tag_name: tagName } : {}),
         ...(description ? { description: description } : {}),
         ...(priority ? { priority: priority } : {}),
+        ...(bucketType ? { bucket_type: bucketType } : {}),
+        ...(logic ? { logic: logic } : {}),
+        ...(userId && bucketType === "custom" ? { user_id: userId } : {}),
         ...(conditions?.length ? { conditions: allConditions } : {}),
       },
     };
@@ -107,17 +115,20 @@ class RulesService {
     const assignedTag = [];
 
     for (const rule of defaultRules) {
-      const { conditions: ruleConditions, tag_name: tagName } = rule;
+      const { conditions: ruleConditions, tag_name: tagName, logic } = rule;
 
-      const isMatchAllCondition = this.rulesHelper.checkRuleConditions(
-        ruleConditions,
-        paymentDetails
-      );
+      const isConditionMatch = this.rulesHelper.checkRuleConditions({
+        conditionLogic: logic,
+        conditions: ruleConditions,
+        paymentDetails,
+      });
 
-      if (isMatchAllCondition) {
+      if (isConditionMatch) {
         assignedTag.push(tagName);
       }
     }
+
+    console.log("ASSIGNED TAG>>> ", assignedTag);
 
     // Assign the tags for this payments
     await this.paymentDao.assignTagsToPayment(paymentId, assignedTag);
