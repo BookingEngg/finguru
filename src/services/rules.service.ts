@@ -128,8 +128,6 @@ class RulesService {
       }
     }
 
-    console.log("ASSIGNED TAG>>> ", assignedTag);
-
     // Assign the tags for this payments
     await this.paymentDao.assignTagsToPayment(paymentId, assignedTag);
 
