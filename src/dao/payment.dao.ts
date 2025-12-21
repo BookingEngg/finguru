@@ -16,6 +16,17 @@ class PaymentDao {
       .select(fields)
       .lean();
   };
+
+  public getPaymentById = async (id: string) => {
+    return await this.paymentModel.findOne({ _id: id }).lean();
+  };
+
+  public assignTagsToPayment = async (paymentId: string, tags: string[]) => {
+    return await this.paymentModel.updateOne(
+      { _id: paymentId },
+      { $set: { tags: tags } }
+    );
+  };
 }
 
 export default PaymentDao;

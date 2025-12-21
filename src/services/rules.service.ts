@@ -1,16 +1,22 @@
 // Dao
 import RulesDao from "@/dao/rules.dao";
+import PaymentDao from "@/dao/payment.dao";
+// Helper
+import RulesHelper from "@/helper/rules.helper";
 // Interfaces
-import {
-  ICreateRulesPayload,
-  IRulesConditions,
-} from "@/interfaces/rules.interface";
+import { ICreateRulesPayload } from "@/interfaces/rules.interface";
 import { IUser } from "@/interfaces/user.interface";
-import { nanoid } from "nanoid";
+import { IPayments } from "@/interfaces/payment.interface";
 
 class RulesService {
   private rulesDao = new RulesDao();
+  private paymentDao = new PaymentDao();
+  // Helper
+  private rulesHelper = new RulesHelper();
 
+  /**
+   * This will add the new rule with given conditions
+   */
   public addNewRule = async (user: IUser, rulePaylaod: ICreateRulesPayload) => {
     const { tag_name: tagName } = rulePaylaod;
 
@@ -32,6 +38,9 @@ class RulesService {
     return await this.rulesDao.createRule(rulePayload);
   };
 
+  /**
+   * Update rules details from rule id
+   */
   public updateRuleDetails = async (
     ruleId: string,
     updatedRulesPayload: ICreateRulesPayload
@@ -78,6 +87,42 @@ class RulesService {
       updatedRulePayload
     );
     return updatedRule;
+  };
+
+  /**
+   * Assign rule tag to payment from the payment id
+   */
+  public assignTagToPayment = async (paymentId: string) => {
+    const paymentDetails = await this.paymentDao.getPaymentById(paymentId);
+
+    if (!paymentDetails) {
+      return `Payment not found with this payment id ${paymentId}`;
+    }
+
+    // Get all default rules
+    const defaultRules = await this.rulesDao.getAllDefaultRules(
+      paymentDetails.user_id
+    );
+
+    const assignedTag = [];
+
+    for (const rule of defaultRules) {
+      const { conditions: ruleConditions, tag_name: tagName } = rule;
+
+      const isMatchAllCondition = this.rulesHelper.checkRuleConditions(
+        ruleConditions,
+        paymentDetails
+      );
+
+      if (isMatchAllCondition) {
+        assignedTag.push(tagName);
+      }
+    }
+
+    // Assign the tags for this payments
+    await this.paymentDao.assignTagsToPayment(paymentId, assignedTag);
+
+    return "Tag assigned successfully";
   };
 }
 

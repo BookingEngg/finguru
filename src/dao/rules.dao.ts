@@ -20,12 +20,15 @@ class RulesDao {
       .lean();
   };
 
+  public getAllDefaultRules = async (userId: string, fields: string[] = []) => {
+    return await this.rulesModel
+      .find({ $or: [{ user_id: userId }, { bucket_type: "default" }] })
+      .select(fields)
+      .lean();
+  };
+
   public updateRuleDetails = async (ruleId: string, updatePayload: object) => {
-    console.log("UPDATED>>>", updatePayload);
-    return await this.rulesModel.updateOne(
-      { short_id: ruleId },
-      updatePayload,
-    );
+    return await this.rulesModel.updateOne({ short_id: ruleId }, updatePayload);
   };
 }
 

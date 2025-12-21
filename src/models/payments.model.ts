@@ -4,7 +4,7 @@ import { IPayments } from "@/interfaces/payment.interface";
 
 const dbConnection = MONGO_INSTANCES.finance;
 
-const PaymentsSchema: Schema<IPayments> = new Schema(
+const PaymentsSchema: Schema<IPayments & Document> = new Schema(
   {
     // System created fields
     user_id: { type: String, required: true },
@@ -18,7 +18,7 @@ const PaymentsSchema: Schema<IPayments> = new Schema(
 
     // Meta fields
     bank_name: { type: String, required: true },
-    flags: { type: [String], required: true, default: [] },
+    tags: { type: [String], required: true, default: [] },
   },
   {
     timestamps: true,

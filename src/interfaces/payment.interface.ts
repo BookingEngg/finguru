@@ -1,4 +1,4 @@
-export interface IPayments extends Document {
+export interface IPayments {
   transaction_id: string; // Unique Id for transaction
   user_id: string; // User id
   description: string; // Description / Narration
@@ -8,7 +8,7 @@ export interface IPayments extends Document {
   bank_name: string; // Bank Enum
 
   // This pmt is belongs to which categories
-  flags: string[]; // Flags
+  tags: string[]; // Tags
 
   createdAt: string;
   updatedAt: string;

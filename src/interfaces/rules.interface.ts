@@ -15,8 +15,8 @@ export interface IRules extends Document {
 
 export interface IRulesConditions {
   field: string;
-  operation: "in" | "equals" | "greater" | "lower";
-  value: string | number;
+  operation: "in" | "equals" | "greater" | "less" | "greaterEqual" | "lessEqual";
+  value: string | number | string[] | number[];
 }
 
 export interface ICreateRulesPayload {

@@ -8,7 +8,7 @@ const dbConnection = MONGO_INSTANCES.finance;
 const RulesConditionsSchema = new Schema({
   field: { type: String, required: true },
   operation: { type: String, required: true },
-  value: { type: String, required: true },
+  value: { type: Schema.Types.Mixed, required: true },
 });
 
 const RulesSchema: Schema<IRules> = new Schema(

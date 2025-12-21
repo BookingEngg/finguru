@@ -27,6 +27,13 @@ class RulesController {
     await this.rulesService.updateRuleDetails(ruleId, payload);
     return res.send({ status: "success" });
   };
+
+  public assignTagToPayment = async (req: Request, res: Response) => {
+    const { paymentId } = req.params;
+
+    const message = await this.rulesService.assignTagToPayment(paymentId);
+    return res.send({ status: "success", message });
+  };
 }
 
 export default RulesController;
