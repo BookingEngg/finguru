@@ -19,7 +19,7 @@ class InternalRoutes implements Routes {
 
   private initializePaymentRoutes = (prefix: string) => {
     this.router.put(
-      `${prefix}/assign-tag/:paymentId`,
+      `${prefix}/auto-assign-tag/:paymentId`,
       asyncWrapper(this.rulesController.assignTagToPayment)
     );
   };

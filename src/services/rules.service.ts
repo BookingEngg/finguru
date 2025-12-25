@@ -100,7 +100,7 @@ class RulesService {
   /**
    * Assign rule tag to payment from the payment id
    */
-  public assignTagToPayment = async (paymentId: string) => {
+  public autoAssignTagToPayment = async (paymentId: string) => {
     const paymentDetails = await this.paymentDao.getPaymentById(paymentId);
 
     if (!paymentDetails) {
