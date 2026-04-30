@@ -7,7 +7,7 @@ import RulesService from "@/services/rules.service";
   const payments = await PaymentModel.find();
 
   for (const payment of payments) {
-    await rulesService.assignTagToPayment(payment._id.toString());
+    await rulesService.autoAssignTagToPayment(payment._id.toString());
   }
 
   process.exit(0);

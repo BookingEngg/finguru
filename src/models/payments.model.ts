@@ -14,7 +14,7 @@ const PaymentsSchema: Schema<IPayments & Document> = new Schema(
     description: { type: String, required: true },
     transaction_type: { type: String, required: true },
     amount: { type: Number, required: true },
-    transaction_created_at: { type: String, required: true },
+    transaction_created_at: { type: Date, required: true },
 
     // Meta fields
     bank_name: { type: String, required: true },

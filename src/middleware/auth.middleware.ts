@@ -12,7 +12,7 @@ class AuthMiddleware {
   public authorizedUser = async (
     req: Request,
     _res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) => {
     return fetch(`${this.backendHttp}/user`, {
       method: "GET",
@@ -25,7 +25,8 @@ class AuthMiddleware {
         next();
       })
       .catch((_error) => {
-        next(new Error(`Unauthorized 401`));
+        console.log("Auth error: ", _error);
+        throw new Error(`Unauthorized 401`);
       });
   };
 }

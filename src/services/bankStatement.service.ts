@@ -2,6 +2,7 @@ import { TRANSACTION_IDENTIFIER_SIZE } from "@/constants/payment.constants";
 import PaymentDao from "@/dao/payment.dao";
 import { IUser } from "@/interfaces/user.interface";
 import { getUniqueIdentifierFromParameters } from "@/util/utils.util";
+import moment from "moment";
 import * as R from "ramda";
 
 class BankStatementService {
@@ -13,7 +14,7 @@ class BankStatementService {
   private isHeaderStatementRow = (
     currentRow: Record<string, string>,
     rowKey: string[],
-    headerFields: string[]
+    headerFields: string[],
   ) => {
     for (let i = 0; i < rowKey.length; i++) {
       if (currentRow[rowKey[i]] !== headerFields[i]) {
@@ -30,7 +31,7 @@ class BankStatementService {
    */
   private isInvalidStatementRow = (
     currentRow: Record<string, string>,
-    rowKey: string[]
+    rowKey: string[],
   ) => {
     let isStarRow = false,
       isAllEmptyRow = true;
@@ -52,7 +53,7 @@ class BankStatementService {
    */
   private getFormattedPmtForSbiStatement = (
     transactionStatementRow: Record<string, string>,
-    userId: string
+    userId: string,
   ) => {
     const debitAmount = R.pathOr("", ["field5"], transactionStatementRow);
     const creditAmount = R.pathOr("", ["field6"], transactionStatementRow);
@@ -63,7 +64,7 @@ class BankStatementService {
 
     const transactionId = getUniqueIdentifierFromParameters(
       [transactionCreatedAt, transactionDescription],
-      TRANSACTION_IDENTIFIER_SIZE
+      TRANSACTION_IDENTIFIER_SIZE,
     );
     return {
       bank_name: "SBI",
@@ -76,7 +77,7 @@ class BankStatementService {
       amount: debitAmount
         ? Number(debitAmount.replace(/,/g, ""))
         : Number(creditAmount.replace(/,/g, "")),
-      transaction_created_at: transactionCreatedAt,
+      transaction_created_at: moment(transactionCreatedAt, "DD/MM/YY").toDate(),
     };
   };
 
@@ -86,7 +87,7 @@ class BankStatementService {
    */
   private getFormattedPmtForHdfcStatement = (
     transactionStatementRow: Record<string, string>,
-    userId: string
+    userId: string,
   ) => {
     const debitAmount = R.path(["field5"], transactionStatementRow) || "";
     const creditAmount = R.path(["field6"], transactionStatementRow) || "";
@@ -97,7 +98,7 @@ class BankStatementService {
 
     const transactionId = getUniqueIdentifierFromParameters(
       [transactionCreatedAt, transactionDescription],
-      TRANSACTION_IDENTIFIER_SIZE
+      TRANSACTION_IDENTIFIER_SIZE,
     );
 
     return {
@@ -111,7 +112,7 @@ class BankStatementService {
       amount: debitAmount
         ? Number(debitAmount.replace(/,/g, ""))
         : Number(creditAmount.replace(/,/g, "")),
-      transaction_created_at: transactionCreatedAt,
+      transaction_created_at: moment(transactionCreatedAt, "DD/MM/YY").toDate(),
     };
   };
 
@@ -121,7 +122,7 @@ class BankStatementService {
    */
   private getHdfcBankStatement = (
     reportData: Record<string, string>[],
-    userId: string
+    userId: string,
   ) => {
     const parsedFilteredStatements = [];
     const { header_fields, fields_args } = this.BANK_STATEMENT_MAPPER.HDFC;
@@ -136,13 +137,13 @@ class BankStatementService {
         // Pick only the header fields value (valid_values)
         const transactionRow = R.pick(
           header_fields,
-          currentUnformattedStatementRow
+          currentUnformattedStatementRow,
         );
 
         // Check if the transaction row is start row or empty row
         const isInvalidRow = this.isInvalidStatementRow(
           currentUnformattedStatementRow,
-          header_fields
+          header_fields,
         );
 
         // Invalid transaction row means => all transaction completed need to stop the transaction filtering
@@ -154,14 +155,14 @@ class BankStatementService {
         // Push the valid transaction row
         // console.log(transactionRow);
         parsedFilteredStatements.push(
-          this.getFormattedPmtForHdfcStatement(transactionRow, userId)
+          this.getFormattedPmtForHdfcStatement(transactionRow, userId),
         );
       }
 
       const isHeader = this.isHeaderStatementRow(
         currentUnformattedStatementRow,
         header_fields,
-        fields_args
+        fields_args,
       );
 
       // Check if the current row is header row => start the transaction filtering
@@ -180,7 +181,7 @@ class BankStatementService {
    */
   private getSbiBankStatement = (
     reportData: Record<string, string>[],
-    userId: string
+    userId: string,
   ) => {
     const parsedFilteredStatements = [];
     const { header_fields, fields_args } = this.BANK_STATEMENT_MAPPER.SBI;
@@ -195,13 +196,13 @@ class BankStatementService {
         // Pick only the header fields value (valid_values)
         const transactionRow = R.pick(
           header_fields,
-          currentUnformattedStatementRow
+          currentUnformattedStatementRow,
         );
 
         // Check if the transaction row is start row or empty row
         const isInvalidRow = this.isInvalidStatementRow(
           currentUnformattedStatementRow,
-          header_fields
+          header_fields,
         );
 
         // Invalid transaction row means => all transaction completed need to stop the transaction filtering
@@ -212,14 +213,14 @@ class BankStatementService {
 
         // Push the valid transaction row
         parsedFilteredStatements.push(
-          this.getFormattedPmtForSbiStatement(transactionRow, userId)
+          this.getFormattedPmtForSbiStatement(transactionRow, userId),
         );
       }
 
       const isHeader = this.isHeaderStatementRow(
         currentUnformattedStatementRow,
         header_fields,
-        fields_args
+        fields_args,
       );
 
       // Check if the current row is header row => start the transaction filtering
@@ -287,16 +288,16 @@ class BankStatementService {
 
     const bankStatement = bankStatementDetails.getStatement(
       reportData,
-      user._id
+      user._id,
     );
 
     const existingPayments = await this.paymentDao.getPaymentsByTransactionIds(
       bankStatement.map((pmt) => pmt.transaction_id),
-      ["transaction_id", "_id"]
+      ["transaction_id", "_id"],
     );
     const exisitingPaymentMapper = R.indexBy(
       R.prop("transaction_id"),
-      existingPayments
+      existingPayments,
     );
 
     const newStatements = bankStatement.filter((statement) => {

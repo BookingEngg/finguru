@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import type { RequestInfo, RequestInit } from "node-fetch";
+import nodeFetch, { RequestInfo, RequestInit } from "node-fetch";
 import {
   redisConfig,
   isProduction,
@@ -10,8 +10,7 @@ import {
 } from "@config";
 
 export async function fetch(url: RequestInfo, init?: RequestInit) {
-  const { default: fetch } = await import("node-fetch");
-  return fetch(url, init).then((res) => res.json());
+  return nodeFetch(url, init).then((res) => res.json());
 }
 
 export const getRedisUrl = () => {

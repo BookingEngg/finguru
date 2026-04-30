@@ -4,12 +4,12 @@ export interface IPayments {
   description: string; // Description / Narration
   transaction_type: "credit" | "debit"; // Transaction type
   amount: number; // Transaction amount
-  transaction_created_at: string; // Transaction created at
+  transaction_created_at: Date; // Transaction created at
   bank_name: string; // Bank Enum
 
   // This pmt is belongs to which categories
   tags: string[]; // Tags
 
-  createdAt: string;
-  updatedAt: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
