@@ -6,13 +6,32 @@ import RulesHelper from "@/helper/rules.helper";
 // Interfaces
 import { ICreateRulesPayload } from "@/interfaces/rules.interface";
 import { IUser } from "@/interfaces/user.interface";
-import { IPayments } from "@/interfaces/payment.interface";
 
 class RulesService {
   private rulesDao = new RulesDao();
   private paymentDao = new PaymentDao();
   // Helper
   private rulesHelper = new RulesHelper();
+
+  public getRules = async ({
+    user_id,
+    rule_id,
+  }: {
+    user_id?: string;
+    rule_id?: string;
+  }) => {
+    const filterObj: Record<string, string> = {};
+
+    if (user_id) {
+      filterObj.user_id = user_id;
+    }
+
+    if (rule_id) {
+      filterObj._id = rule_id;
+    }
+
+    return await this.rulesDao.getRuleByFilter(filterObj);
+  };
 
   /**
    * This will add the new rule with given conditions
@@ -45,7 +64,7 @@ class RulesService {
    */
   public updateRuleDetails = async (
     ruleId: string,
-    updatedRulesPayload: ICreateRulesPayload
+    updatedRulesPayload: ICreateRulesPayload,
   ) => {
     const {
       tag_name: tagName,
@@ -92,7 +111,7 @@ class RulesService {
 
     const updatedRule = await this.rulesDao.updateRuleDetails(
       ruleId,
-      updatedRulePayload
+      updatedRulePayload,
     );
     return updatedRule;
   };
@@ -109,7 +128,7 @@ class RulesService {
 
     // Get all default rules
     const defaultRules = await this.rulesDao.getAllDefaultRules(
-      paymentDetails.user_id
+      paymentDetails.user_id,
     );
 
     const assignedTag = [];
@@ -132,6 +151,19 @@ class RulesService {
     await this.paymentDao.assignTagsToPayment(paymentId, assignedTag);
 
     return "Tag assigned successfully";
+  };
+
+  /**
+   * Delete a rule by rule id
+   */
+  public deleteRule = async (ruleId: string) => {
+    const existingRule = await this.rulesDao.getRuleById(ruleId);
+    if (!existingRule) {
+      throw new Error("Rule not found");
+    }
+
+    await this.rulesDao.deleteRule(ruleId);
+    return "Rule deleted successfully";
   };
 }
 

@@ -27,6 +27,10 @@ class PaymentDao {
       { $set: { tags: tags } }
     );
   };
+
+  public getPaymentsByFilter = async (filter: object) => {
+    return await this.paymentModel.find(filter).lean();
+  };
 }
 
 export default PaymentDao;

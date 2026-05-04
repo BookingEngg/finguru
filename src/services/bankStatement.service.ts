@@ -55,12 +55,12 @@ class BankStatementService {
     transactionStatementRow: Record<string, string>,
     userId: string,
   ) => {
-    const debitAmount = R.pathOr("", ["field5"], transactionStatementRow);
-    const creditAmount = R.pathOr("", ["field6"], transactionStatementRow);
+    const debitAmount = R.pathOr("", ["field4"], transactionStatementRow);
+    const creditAmount = R.pathOr("", ["field5"], transactionStatementRow);
     const transactionDescription =
-      R.path(["field3"], transactionStatementRow) || "";
+      R.path(["field2"], transactionStatementRow) || "";
     const transactionCreatedAt =
-      R.path(["Account Name       :"], transactionStatementRow) || "";
+      R.path(["field1"], transactionStatementRow) || "";
 
     const transactionId = getUniqueIdentifierFromParameters(
       [transactionCreatedAt, transactionDescription],
@@ -77,7 +77,7 @@ class BankStatementService {
       amount: debitAmount
         ? Number(debitAmount.replace(/,/g, ""))
         : Number(creditAmount.replace(/,/g, "")),
-      transaction_created_at: moment(transactionCreatedAt, "DD/MM/YY").toDate(),
+      transaction_created_at: moment(transactionCreatedAt, "DD/MM/YYYY").toDate(),
     };
   };
 
@@ -190,6 +190,7 @@ class BankStatementService {
 
     for (let i = 0; i < reportData.length; i++) {
       const currentUnformattedStatementRow = reportData[i];
+      // console.log("currentUnformattedStatementRow>>> ", currentUnformattedStatementRow);
 
       // Current row is transaction row
       if (isTransactionRow) {
@@ -254,17 +255,17 @@ class BankStatementService {
     },
     SBI: {
       header_fields: [
-        "Account Name       :",
+        "field1",
+        "field2",
         "field3",
         "field4",
         "field5",
         "field6",
-        "field7",
       ],
       fields_args: [
-        "Txn Date",
-        "Description",
-        "Ref No./Cheque No.",
+        "Date",
+        "Details",
+        "Ref No/Cheque No",
         "Debit",
         "Credit",
         "Balance",

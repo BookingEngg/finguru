@@ -8,6 +8,10 @@ class RulesDao {
     return await this.rulesModel.create(rule);
   };
 
+  public getRuleByFilter = async (filter: object) => {
+    return await this.rulesModel.find(filter).lean();
+  };
+
   public getRuleByTagName = async (tagName: string) => {
     return await this.rulesModel
       .findOne({ tag_name: tagName, is_active: true })
@@ -29,6 +33,13 @@ class RulesDao {
 
   public updateRuleDetails = async (ruleId: string, updatePayload: object) => {
     return await this.rulesModel.updateOne({ short_id: ruleId }, updatePayload);
+  };
+
+  public deleteRule = async (ruleId: string) => {
+    return await this.rulesModel.updateOne(
+      { short_id: ruleId },
+      { $set: { is_active: false } },
+    );
   };
 }
 
