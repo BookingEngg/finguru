@@ -6,6 +6,7 @@ import { nanoid } from "nanoid";
 const dbConnection = MONGO_INSTANCES.finance;
 
 const RulesConditionsSchema = new Schema({
+  type: { type: String, enum: ["simple", "cross_transaction"], require: true },
   field: { type: String, required: true },
   operation: { type: String, required: true },
   value: { type: Schema.Types.Mixed, required: true },
@@ -30,7 +31,7 @@ const RulesSchema: Schema<IRules> = new Schema(
   },
   {
     timestamps: true,
-  }
+  },
 );
 
 RulesSchema.pre("save", function (next) {

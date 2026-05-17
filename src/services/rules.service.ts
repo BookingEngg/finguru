@@ -136,7 +136,7 @@ class RulesService {
     for (const rule of defaultRules) {
       const { conditions: ruleConditions, tag_name: tagName, logic } = rule;
 
-      const isConditionMatch = this.rulesHelper.checkRuleConditions({
+      const isConditionMatch = await this.rulesHelper.checkRuleConditions({
         conditionLogic: logic,
         conditions: ruleConditions,
         paymentDetails,

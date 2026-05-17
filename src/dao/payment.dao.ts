@@ -1,4 +1,5 @@
 import PaymentModel from "@/models/payments.model";
+import moment from "moment";
 
 class PaymentDao {
   private paymentModel = PaymentModel;
@@ -9,7 +10,7 @@ class PaymentDao {
 
   public getPaymentsByTransactionIds = async (
     transactionIds: string[],
-    fields: string[]
+    fields: string[],
   ) => {
     return await this.paymentModel
       .find({ transaction_id: { $in: transactionIds } })
@@ -24,7 +25,7 @@ class PaymentDao {
   public assignTagsToPayment = async (paymentId: string, tags: string[]) => {
     return await this.paymentModel.updateOne(
       { _id: paymentId },
-      { $set: { tags: tags } }
+      { $set: { tags: tags } },
     );
   };
 
@@ -32,8 +33,23 @@ class PaymentDao {
     return await this.paymentModel.find(filter).lean();
   };
 
-  public runAggregation = async (pipeline: object[]) => {
+  public runAggregation = async (pipeline: any[]) => {
     return await this.paymentModel.aggregate(pipeline);
+  };
+
+  public getTransactionCountByAmountAndDate = async (
+    transactionCreatedDate: Date,
+    transactionId: string,
+    amount: number,
+  ) => {
+    return await this.paymentModel.countDocuments({
+      transaction_created_at: {
+        $gte: moment(transactionCreatedDate).startOf("day").toDate(),
+        $lte: moment(transactionCreatedDate).endOf("day").toDate(),
+      },
+      transaction_id: { $ne: transactionId },
+      amount,
+    });
   };
 }
 

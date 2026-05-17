@@ -15,6 +15,7 @@ export interface IRules extends Document {
 }
 
 export interface IRulesConditions {
+  type: "simple" | "cross_transaction";
   field: string;
   operation: "in" | "fuzzy" | "equals" | "greater" | "less" | "greaterEqual" | "lessEqual";
   value: string | number | string[] | number[];
