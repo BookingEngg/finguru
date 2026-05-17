@@ -16,7 +16,7 @@ export interface IRules extends Document {
 
 export interface IRulesConditions {
   field: string;
-  operation: "in" | "equals" | "greater" | "less" | "greaterEqual" | "lessEqual";
+  operation: "in" | "fuzzy" | "equals" | "greater" | "less" | "greaterEqual" | "lessEqual";
   value: string | number | string[] | number[];
 }
 

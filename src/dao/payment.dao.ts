@@ -31,6 +31,10 @@ class PaymentDao {
   public getPaymentsByFilter = async (filter: object) => {
     return await this.paymentModel.find(filter).lean();
   };
+
+  public runAggregation = async (pipeline: object[]) => {
+    return await this.paymentModel.aggregate(pipeline);
+  };
 }
 
 export default PaymentDao;

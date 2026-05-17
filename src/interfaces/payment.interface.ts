@@ -13,3 +13,23 @@ export interface IPayments {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface IFinancialQueryFilters {
+  transaction_type?: "credit" | "debit";
+  date_range?: {
+    start?: string; // YYYY-MM-DD
+    end?: string; // YYYY-MM-DD
+  };
+  tag?: string;
+  amount_gt?: number;
+  amount_lt?: number;
+  bank_name?: string;
+}
+
+export interface IFinancialQueryPayload {
+  operation: "sum" | "avg" | "filter" | "trend" | "group_by" | "category_analysis" | "monthly_growth" | "merchant_analysis";
+  metric?: string;
+  filters?: IFinancialQueryFilters;
+  group_by?: string;
+  period?: "day" | "week" | "month";
+}

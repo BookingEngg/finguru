@@ -9,6 +9,7 @@ import { asyncWrapper } from "@/middleware/common.middleware";
 // Controllers
 import FinanceReportController from "@/controllers/financeReport.controller";
 import RulesController from "@/controllers/rules.controller";
+import PaymentController from "@/controllers/payment.controller";
 
 class ExternalRoutes implements Routes {
   public path = "/api/v1/platform";
@@ -19,6 +20,7 @@ class ExternalRoutes implements Routes {
   // Controllers
   private financeReportController = new FinanceReportController();
   private rulesController = new RulesController();
+  private paymentController = new PaymentController();
 
   constructor() {
     this.initializeStatementsRoutes(`${this.path}/statement`);
@@ -43,9 +45,9 @@ class ExternalRoutes implements Routes {
     );
 
     this.router.post(
-      `${path}/filter`,
+      `${path}/operation`,
       this.authMiddleware.authorizedUser,
-      asyncWrapper(this.rulesController.getPayments),
+      asyncWrapper(this.paymentController.executeFinancialQuery),
     );
   };
 

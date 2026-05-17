@@ -5,6 +5,22 @@ import { IPayments } from "@/interfaces/payment.interface";
 import { IRulesConditions } from "@/interfaces/rules.interface";
 
 class RulesHelper {
+  private normalizeTokens = (str: string): string[] => {
+    return str
+      .toUpperCase()
+      .replace(/[-_@./0-9]/g, " ")
+      .split(/\s+/)
+      .filter((token) => token.length >= 4);
+  };
+
+  private fuzzyMatch = (description: string, ruleValue: string): boolean => {
+    const descTokens = this.normalizeTokens(description);
+    const valueTokens = this.normalizeTokens(ruleValue);
+    return valueTokens.some((vt) =>
+      descTokens.some((dt) => dt.includes(vt) || vt.includes(dt))
+    );
+  };
+
   public checkRuleConditions = (payload: {
     conditionLogic: "and" | "or";
     conditions: IRulesConditions[];
@@ -50,6 +66,18 @@ class RulesHelper {
             );
           } else {
             isConditionMatched = Boolean(conditionFieldValue.includes(value));
+          }
+          break;
+        case "fuzzy":
+          if (Array.isArray(value)) {
+            isConditionMatched = (value as string[]).some((valueEl) =>
+              this.fuzzyMatch(String(conditionFieldValue), valueEl)
+            );
+          } else {
+            isConditionMatched = this.fuzzyMatch(
+              String(conditionFieldValue),
+              String(value)
+            );
           }
           break;
         case "equals":

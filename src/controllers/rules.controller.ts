@@ -1,11 +1,9 @@
 import { Request, Response } from "express";
 import RulesService from "@/services/rules.service";
-import PaymentDao from "@/dao/payment.dao";
 import { ICreateRulesPayload } from "@/interfaces/rules.interface";
 
 class RulesController {
   private rulesService = new RulesService();
-  private paymentDao = new PaymentDao();
 
   public getRules = async (
     req: Request<{}, {}, {}, { user_id: string; rule_id: string }>,
@@ -45,13 +43,6 @@ class RulesController {
 
     const message = await this.rulesService.autoAssignTagToPayment(paymentId);
     return res.send({ status: "success", message });
-  };
-
-  public getPayments = async (req: Request, res: Response) => {
-    const filter = req.body;
-    console.log("FILTER>> ", filter)
-    const payments = await this.paymentDao.getPaymentsByFilter(filter);
-    return res.send({ status: "success", data: payments });
   };
 
   public deleteRule = async (
